@@ -49,11 +49,36 @@ class todoListApp extends StatefulWidget {
   State<todoListApp> createState() => _todoListAppState();
 }
 
+
+void saveData(todos) async {
+  var reslut = await firestore.collection('todolist').get();
+  for (var doc in reslut.docs) {
+    firestore.collection('todolist').doc(doc.id).delete();
+  }
+  for (var j = 0; j<todos.length; j++) {
+    await firestore.collection('todolist').add({
+      'title':todos[j].title, "subtitle" : todos[j].description,
+    });
+  }
+}
+
+// void openData(todos) async {
+//   var result = await firestore.collection('todolist').get();
+//   todos= [];
+//   for (var doc in result.docs) {
+//     setState(() {
+//       todos.add(TodoModel(
+//           title: doc["title"],
+//           description: doc["subtitle"]
+//       ));
+//       // todos = todos_sub;
+//     });
+//   }
+// }
+
 class _todoListAppState extends State<todoListApp> {
   String title="";
   String description = "";
-  // final url = Uri.parse("http://127.0.0.1:8000/todo");
-
   List<TodoModel> todos = [];
 
 
@@ -65,51 +90,79 @@ class _todoListAppState extends State<todoListApp> {
           title: Text("투두리스트"),
           centerTitle: true,
           leading: IconButton(
-            onPressed: () async {
-              var result = await firestore.collection('todolist').get();
-              todos= [];
-              for (var doc in result.docs) {
-                setState(() {
-                  todos.add(TodoModel(
-                      title: doc["title"],
-                      description: doc["subtitle"]
-                  ));
-                  // todos = todos_sub;
-                });
-              }
-              var result2 = await firestore.collection('todolist').get();
-              print(result2);
+            onPressed: () {
+              showDialog(
+                  barrierDismissible: true,
+                  context: context,
+                  builder: (_) {
+                    return AlertDialog(
+                      title: Text("불러오기"),
+                      actions: [
+                        Text("최근에 저장된 리스트를 불러옵니다."),
+                        Row(
+                          children: [
+                            ElevatedButton(
+                              onPressed: () async {
+                                Navigator.of(context).pop();
+                                var result = await firestore.collection('todolist').get();
+                                todos= [];
+                                for (var doc in result.docs) {
+                                  setState(() {
+                                    todos.add(TodoModel(
+                                        title: doc["title"],
+                                        description: doc["subtitle"]
+                                    ));
+                                    // todos = todos_sub;
+                                  });
+                                }
+                              }, child: Text("확인"),
+                            ),
+                            ElevatedButton(
+                              onPressed: () {
+                                Navigator.of(context).pop();
+                                return;
+                              }, child: Text("취소"),
+                            )
+                          ],
+                        )
+                      ],
+                    );
+                  }
+              );
             },
             icon: Icon(Icons.file_open),
           ),
           actions: [
             IconButton(
-                onPressed: () async {
-                  // for (var i=0; i < todos.length; i++) {
-
-                  // }
-                  var reslut = await firestore.collection('todolist').get();
-                  print(reslut.metadata);
-                  int i = 0;
-                  List<String>ids = [];
-                  for (var doc in reslut.docs) {ids.add(doc.id);};
-                  while (true) {
-                    if (i < ids.length) {
-                      for (var doc in reslut.docs) {
-                        firestore.collection('todolist').doc(doc.id).set({
-                          'title' : todos[i].title, "subtitle" : todos[i].description
-                        });
-                        i++;
-                      };
-                    } else {
-                      for (var j = ids.length; j<todos.length; j++) {
-                        await firestore.collection('todolist').add({
-                          'title':todos[j].title, "subtitle" : todos[j].description,
-                        });
-                      }
-                      break;
+                onPressed: () {
+                  showDialog(
+                    barrierDismissible: true,
+                    context: context,
+                    builder: (_) {
+                      return AlertDialog(
+                        title: Text("저장하시겠습니까?"),
+                        actions: [
+                          Text("이전의 기록이 덮어씌워집니다."),
+                          Row(
+                            children: [
+                              ElevatedButton(
+                                onPressed: () {
+                                  Navigator.of(context).pop();
+                                  saveData(todos);
+                                }, child: Text("확인"),
+                              ),
+                              ElevatedButton(
+                                onPressed: () {
+                                  Navigator.of(context).pop();
+                                  return;
+                                }, child: Text("취소"),
+                              )
+                            ],
+                          )
+                        ],
+                      );
                     }
-                  }
+                  );
                 },
                 icon: Icon(Icons.save)
             )
