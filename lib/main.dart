@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
@@ -28,6 +30,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
+      debugShowCheckedModeBanner: false,
       home: const todoListApp(),
     );
   }
@@ -97,9 +100,10 @@ class _todoListAppState extends State<todoListApp> {
                   builder: (_) {
                     return AlertDialog(
                       title: Text("불러오기"),
+                      content: Text("최근에 저장된 리스트를 불러옵니다."),
                       actions: [
-                        Text("최근에 저장된 리스트를 불러옵니다."),
                         Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             ElevatedButton(
                               onPressed: () async {
@@ -115,13 +119,22 @@ class _todoListAppState extends State<todoListApp> {
                                     // todos = todos_sub;
                                   });
                                 }
-                              }, child: Text("확인"),
+                              },
+                              child: Text("확인"),
+                              style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.teal
+                              ),
                             ),
+                            SizedBox(width: 20),
                             ElevatedButton(
                               onPressed: () {
                                 Navigator.of(context).pop();
                                 return;
-                              }, child: Text("취소"),
+                              },
+                              child: Text("취소"),
+                              style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.grey
+                              ),
                             )
                           ],
                         )
@@ -141,21 +154,31 @@ class _todoListAppState extends State<todoListApp> {
                     builder: (_) {
                       return AlertDialog(
                         title: Text("저장하시겠습니까?"),
+                        content: Text("이전의 기록이 덮어씌워집니다."),
                         actions: [
-                          Text("이전의 기록이 덮어씌워집니다."),
                           Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               ElevatedButton(
                                 onPressed: () {
                                   Navigator.of(context).pop();
                                   saveData(todos);
-                                }, child: Text("확인"),
+                                },
+                                child: Text("확인"),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.teal
+                                ),
                               ),
+                              SizedBox(width: 20),
                               ElevatedButton(
                                 onPressed: () {
                                   Navigator.of(context).pop();
                                   return;
-                                }, child: Text("취소"),
+                                },
+                                child: Text("취소"),
+                                style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.grey
+                                ),
                               )
                             ],
                           )
@@ -168,24 +191,38 @@ class _todoListAppState extends State<todoListApp> {
             )
           ],
         ),
-        body: ListView.builder(
-            itemBuilder: (_, index) {
-              return InkWell(
-                child: ListTile(
-                  title: Text(todos[index].title),
-                  subtitle: Text(todos[index].description),
-                  trailing: IconButton(
-                    icon: Icon(Icons.delete),
-                    onPressed: () {
-                      setState(() {
-                        todos.removeAt(index);
-                      });
-                    },
-                  ),
-                ),
-              );
-            },
-            itemCount: todos.length
+        body: Column(
+          children: [
+            Expanded(// 높이를 100으로 고정
+              child: ListView.builder(
+                itemCount: todos.length,
+                itemBuilder: (_, index) {
+                  return InkWell(
+                      child: Card(
+                        elevation: 4,
+                        margin: EdgeInsets.all(8),
+                        shape: RoundedRectangleBorder(borderRadius:
+                        BorderRadius.circular(8)
+                        ),
+                        child: ListTile(
+                          title: Text(todos[index].title),
+                          subtitle: Text(todos[index].description),
+                          trailing: IconButton(
+                            icon: Icon(Icons.delete),
+                            onPressed: () {
+                              setState(() {
+                                todos.removeAt(index);
+                              });
+                            },
+                          ),
+                        ),
+                      )
+                  );
+                },
+              )
+            ),
+            IconButton(onPressed: (){}, icon: Icon(Icons.add_circle)),
+          ],
         ),
         floatingActionButton: FloatingActionButton(
             backgroundColor: Colors.teal,
@@ -223,7 +260,11 @@ class _todoListAppState extends State<todoListApp> {
                                     description: description
                                 ));
                               });
-                            }, child: Text("todo 추가"),
+                            },
+                            child: Text("todo 추가"),
+                            style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.teal
+                            ),
                           ),
                         ),
                       ],
